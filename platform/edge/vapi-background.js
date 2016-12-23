@@ -753,10 +753,15 @@ vAPI.tabs.reload = function(tabId /*, flags*/) {
 
     // Workaround for Edge tab reloading
     // see: https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/tabs/reload#Browser_compatibility
+    // and: https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/9107382/
     browser.tabs.get(tabId, function(tab){
-        if (browser.tabs.lastError || !tab) {
+        if ( browser.tabs.lastError || !tab ) {
             /* noop */
             return;
+        }
+        if ( tab.url.indexOf('#') !== -1 ) {
+            // Simply updating a URL to the same value doesn't reload the page if it's a hash URL
+            vAPI.tabs.replace(tabId, 'about:blank');
         }
         vAPI.tabs.replace(tabId, tab.url);
     });
